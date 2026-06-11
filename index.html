@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>استبيان ورشة عمل — وادي الإسكندر</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f5f7fa;direction:rtl;color:#333;line-height:1.6}
+.wrap{max-width:540px;margin:0 auto;padding:16px}
+.progress-bar{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #e0e0e0;padding:10px 16px}
+.progress-track{height:5px;background:#e0e0e0;border-radius:3px}
+.progress-fill{height:5px;background:#1B4F72;border-radius:3px;transition:width .3s}
+.progress-label{font-size:12px;color:#999;text-align:center;margin-top:4px}
+.section{display:none}
+.section.active{display:block}
+.section-title{color:#1B4F72;font-size:20px;font-weight:700;border-bottom:3px solid #1B4F72;padding-bottom:8px;margin-bottom:6px}
+.section-intro{color:#666;font-size:14px;margin-bottom:20px}
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.q-text{font-size:15px;font-weight:600;margin-bottom:10px}
+.radio-group{display:flex;flex-direction:column;gap:6px}
+.radio-option{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;background:#f8f9fa;border:2px solid transparent;transition:all .15s}
+.radio-option.selected{background:#D6EAF8;border-color:#1B4F72}
+.radio-option input{accent-color:#1B4F72;width:18px;height:18px}
+.rating-row{display:flex;justify-content:center;gap:8px;margin:12px 0 6px}
+.rating-btn{width:48px;height:48px;border-radius:50%;border:2px solid #ccc;background:#fff;color:#333;font-size:18px;font-weight:700;cursor:pointer;transition:all .15s}
+.rating-btn.active{border-color:#1B4F72;background:#1B4F72;color:#fff}
+.rating-labels{display:flex;justify-content:space-between;font-size:12px;color:#888;padding:0 4px}
+textarea{width:100%;min-height:80px;padding:12px;border-radius:8px;border:1px solid #ddd;font-size:14px;font-family:inherit;direction:rtl;resize:vertical}
+.pri-item{display:flex;align-items:center;gap:8px;padding:10px 12px;margin-bottom:6px;border-radius:10px;background:#f8f9fa;border:2px solid transparent;transition:all .15s}
+.pri-item.high{background:#D6EAF8;border-color:#1B4F72}
+.pri-item.reject{background:#FADBD8;border-color:#C0392B}
+.pri-btn{width:34px;height:34px;border-radius:8px;border:2px solid #ccc;background:#fff;color:#aaa;font-size:16px;font-weight:700;cursor:pointer}
+.pri-btn.on-high{border-color:#1B4F72;background:#1B4F72;color:#fff}
+.pri-btn.on-reject{border-color:#C0392B;background:#C0392B;color:#fff}
+.pri-label{flex:1;font-size:14px}
+.nav{display:flex;justify-content:space-between;margin-top:24px;padding-bottom:40px}
+.btn{padding:12px 28px;font-size:15px;font-weight:600;border-radius:10px;cursor:pointer;border:none}
+.btn-next{background:#1B4F72;color:#fff}
+.btn-prev{background:#fff;color:#1B4F72;border:2px solid #1B4F72}
+.btn-submit{background:#27AE60;color:#fff;font-weight:700}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.intro-screen{text-align:center;padding-top:60px}
+.intro-screen h1{color:#1B4F72;font-size:22px;line-height:1.5;margin-bottom:8px}
+.intro-screen .sub{color:#2E86C1;font-size:16px;margin-bottom:32px}
+.intro-screen .desc{color:#666;font-size:14px;line-height:1.8;margin-bottom:40px}
+.intro-screen .start-btn{padding:14px 48px;font-size:18px;font-weight:700;color:#fff;background:#1B4F72;border:none;border-radius:12px;cursor:pointer}
+.done-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}
+.done-screen h2{color:#1B4F72;font-size:26px;margin:16px 0 12px}
+.done-screen p{color:#555;font-size:16px;line-height:1.7;max-width:380px}
+.pri-legend{font-size:13px;color:#666;text-align:center;margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+const DATA = [
+  {id:"intro",type:"intro"},
+  {id:"bg",title:"الجزء الأول — خلفية المشارك",questions:[
+    {id:"q1",text:"ما هو مجال تخصصك؟",type:"radio",opts:["هندسة المناظر الطبيعية","هندسة معمارية","تخطيط مدن","آخر"]},
+    {id:"q2",text:"كم سنة من الخبرة المهنية لديك؟",type:"radio",opts:["أقل من 5 سنوات","5–15 سنة","أكثر من 15 سنة"]},
+    {id:"q3",text:"هل سبق وعملت في مشروع في بلد عربي أو على وادٍ حضري؟",type:"radio",opts:["نعم – بلد عربي فقط","نعم – وادٍ حضري فقط","نعم – كلاهما","لا"]}
+  ]},
+  {id:"potential",title:"الجزء الثاني — إمكانيات الوادي",intro:"بناءً على ما رأيته في الجولة، قيّم كل بُعد:",questions:[
+    {id:"q4",text:"إمكانية تأهيل الوادي كمحور مائي-بيئي",type:"rating",lo:"ضعيف جداً",hi:"عالٍ جداً"},
+    {id:"q5",text:"إمكانية خلق مساحات مفتوحة عامة على الضفاف",type:"rating",lo:"ضعيف جداً",hi:"عالٍ جداً"},
+    {id:"q6",text:"إمكانية الوادي كمحرّك للتجديد الحضري",type:"rating",lo:"ضعيف جداً",hi:"عالٍ جداً"},
+    {id:"q7",text:"واقعية التنفيذ في سياق بلد عربي",type:"rating",lo:"غير واقعي",hi:"واقعي جداً"},
+    {id:"q8",text:"إمكانية التنفيذ خلال 10 سنوات",type:"rating",lo:"غير ممكن",hi:"ممكن جداً"},
+    {id:"q9",text:"ما هي الإمكانية الفريدة التي رأيتها في هذا الوادي مقارنة بأودية أخرى؟",type:"textarea"}
+  ]},
+  {id:"barriers",title:"الجزء الثالث — العوائق",intro:"قيّم حدة كل عائق (1 = ليس عائقاً، 5 = عائق حرج):",questions:[
+    {id:"q10",text:"بناء غير رسمي على الضفاف",type:"rating",lo:"ليس عائقاً",hi:"حرج"},
+    {id:"q11",text:"ملكية خاصة متعددة ومعقدة",type:"rating",lo:"ليس عائقاً",hi:"حرج"},
+    {id:"q12",text:"غياب مصادر تمويل",type:"rating",lo:"ليس عائقاً",hi:"حرج"},
+    {id:"q13",text:"انعدام ثقة السكان بالسلطات",type:"rating",lo:"ليس عائقاً",hi:"حرج"},
+    {id:"q14",text:"غياب مخطط تفصيلي معتمد",type:"rating",lo:"ليس عائقاً",hi:"حرج"},
+    {id:"q15",text:"تعارض بين أهداف بيئية وحضرية",type:"rating",lo:"ليس عائقاً",hi:"حرج"},
+    {id:"q16",text:"ما العائق الذي فاجأك أكثر خلال الجولة؟",type:"textarea"}
+  ]},
+  {id:"interventions",title:"الجزء الرابع — التدخلات",intro:"اختر 3 تدخلات ذات أولوية عالية ✓ وتدخل واحد لن تنفذه ✗",questions:[
+    {id:"q_pri",type:"priority",opts:["ممر حضري مشاة على طول الوادي","حديقة خطية مع مساحات جلوس","إزالة المباني المخالفة على الضفاف","تأهيل بيئي (معالجة المياه والنباتات)","مركز مجتمعي/ثقافي مطل على الوادي","برامج تعليم بيئي للمدارس","مشروع سكن جديد بمحاذاة الوادي","شارع تجاري/سوق على الضفة"]},
+    {id:"q_pri_why",text:"لماذا اخترت التدخل الذي لن تنفذه؟",type:"textarea"}
+  ]},
+  {id:"mechanisms",title:"الجزء الخامس — آليات التنفيذ",intro:"قيّم كل آلية حسب إمكانية تطبيقها الواقعي:",questions:[
+    {id:"q17",text:"إخلاء وبناء بالاتفاق المتبادل",type:"rating",lo:"غير قابل",hi:"قابل جداً"},
+    {id:"q18",text:"تعويض مالي + تأهيل المنطقة",type:"rating",lo:"غير قابل",hi:"قابل جداً"},
+    {id:"q19",text:"نقل حقوق البناء إلى قطعة أخرى",type:"rating",lo:"غير قابل",hi:"قابل جداً"},
+    {id:"q20",text:"تعاون مجتمعي تطوعي بدون تعويض",type:"rating",lo:"غير قابل",hi:"قابل جداً"},
+    {id:"q21",text:"ضغط تنظيمي (إنفاذ قانون التخطيط)",type:"rating",lo:"غير قابل",hi:"قابل جداً"},
+    {id:"q22",text:"هل هناك آلية أخرى تراها ضرورية لم ترد في القائمة؟",type:"textarea"}
+  ]},
+  {id:"closing",title:"الجزء السادس — ختام",questions:[
+    {id:"q27",text:"ما هي التوصية الواحدة للبلدية كخطوة أولى لتأهيل الوادي؟",type:"textarea"},
+    {id:"q28",text:"هل توافق على إجراء مقابلة معمّقة لاحقاً؟",type:"radio",opts:["نعم","لا","ربما"]}
+  ]}
+];
+
+let step=0, answers={}, submitted=false;
+
+// ---- GOOGLE SHEETS INTEGRATION ----
+// Replace this URL with your Google Apps Script Web App URL:
+const SHEET_URL = "";
+// If empty, responses are saved locally only.
+
+async function sendToSheet(data){
+  if(!SHEET_URL) return;
+  try{
+    await fetch(SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+  }catch(e){console.log("Sheet send failed:",e)}
+}
+
+function render(){
+  const app=document.getElementById("app");
+  if(submitted){
+    app.innerHTML=`<div class="done-screen"><div><div style="font-size:64px">🌊</div><h2>شكراً لمشاركتك!</h2><p>تم حفظ إجاباتك بنجاح.<br>مساهمتك ستُثري البحث حول تأهيل وادي الإسكندر في قلنسوة.</p></div></div>`;
+    return;
+  }
+  const sec=DATA[step];
+  if(sec.type==="intro"){
+    app.innerHTML=`<div class="wrap"><div class="intro-screen">
+      <div style="font-size:48px;margin-bottom:20px">🏞️</div>
+      <h1>استبيان ورشة عمل<br>وادي الإسكندر، قلنسوة</h1>
+      <p class="sub">بحث ماجستير — التخنيون 2026</p>
+      <p class="desc">هذا الاستبيان مبني على ما شاهدته خلال الجولة الميدانية.<br>الإجابات مجهولة الهوية وتُستخدم لأغراض البحث فقط.<br>الوقت المقدّر: 15–20 دقيقة.</p>
+      <button class="start-btn" onclick="step=1;render()">ابدأ الاستبيان ←</button>
+    </div></div>`;
+    return;
+  }
+  const prog=Math.round((step/(DATA.length-1))*100);
+  let html=`<div class="progress-bar"><div class="progress-track"><div class="progress-fill" style="width:${prog}%"></div></div><div class="progress-label">${step} / ${DATA.length-1}</div></div>`;
+  html+=`<div class="wrap"><h2 class="section-title">${sec.title}</h2>`;
+  if(sec.intro) html+=`<p class="section-intro">${sec.intro}</p>`;
+
+  sec.questions.forEach(q=>{
+    html+=`<div class="card">`;
+    if(q.type!=="priority") html+=`<div class="q-text">${q.text}</div>`;
+
+    if(q.type==="radio"){
+      html+=`<div class="radio-group">`;
+      q.opts.forEach((o,i)=>{
+        const sel=answers[q.id]===o?"selected":"";
+        html+=`<label class="radio-option ${sel}" onclick="setA('${q.id}','${o.replace(/'/g,"\\'")}');render()"><input type="radio" ${sel?"checked":""} readonly><span>${o}</span></label>`;
+      });
+      html+=`</div>`;
+    }
+
+    if(q.type==="rating"){
+      html+=`<div class="rating-row">`;
+      for(let n=1;n<=5;n++){
+        const act=answers[q.id]===n?"active":"";
+        html+=`<button class="rating-btn ${act}" onclick="setA('${q.id}',${n});render()">${n}</button>`;
+      }
+      html+=`</div><div class="rating-labels"><span>${q.hi} ←</span><span>→ ${q.lo}</span></div>`;
+    }
+
+    if(q.type==="textarea"){
+      html+=`<textarea id="ta_${q.id}" oninput="setA('${q.id}',this.value)" placeholder="اكتب هنا...">${answers[q.id]||""}</textarea>`;
+    }
+
+    if(q.type==="priority"){
+      const val=answers[q.id]||{high:[],reject:null};
+      html+=`<div class="pri-legend">✓ = أولوية عالية (اختر 3) &nbsp;|&nbsp; ✗ = لن أنفذه (اختر 1)</div>`;
+      q.opts.forEach((o,i)=>{
+        const isH=val.high.includes(i), isR=val.reject===i;
+        const cls=isH?"high":isR?"reject":"";
+        html+=`<div class="pri-item ${cls}"><div style="display:flex;gap:6px">`;
+        html+=`<button class="pri-btn ${isH?"on-high":""}" onclick="toggleHigh(${i})" ${isR?"disabled":""}>✓</button>`;
+        html+=`<button class="pri-btn ${isR?"on-reject":""}" onclick="toggleReject(${i})" ${isH?"disabled":""}>✗</button>`;
+        html+=`</div><span class="pri-label">${o}</span></div>`;
+      });
+    }
+    html+=`</div>`;
+  });
+
+  html+=`<div class="nav"><button class="btn btn-prev" onclick="step--;render()">→ السابق</button>`;
+  if(step<DATA.length-1) html+=`<button class="btn btn-next" onclick="step++;render()">التالي ←</button>`;
+  else html+=`<button class="btn btn-submit" onclick="submitForm()">إرسال ✓</button>`;
+  html+=`</div></div>`;
+  app.innerHTML=html;
+}
+
+function setA(id,val){answers[id]=val}
+function toggleHigh(i){
+  const v=answers["q_pri"]||{high:[],reject:null};
+  let h=[...v.high];
+  if(h.includes(i)) h=h.filter(x=>x!==i);
+  else if(h.length<3) h.push(i);
+  answers["q_pri"]={...v,high:h};
+  render();
+}
+function toggleReject(i){
+  const v=answers["q_pri"]||{high:[],reject:null};
+  answers["q_pri"]={...v,reject:v.reject===i?null:i};
+  render();
+}
+async function submitForm(){
+  const ts=new Date().toISOString();
+  const payload={...answers,timestamp:ts};
+  // Save locally
+  const saved=JSON.parse(localStorage.getItem("survey_responses")||"[]");
+  saved.push(payload);
+  localStorage.setItem("survey_responses",JSON.stringify(saved));
+  // Send to Google Sheet if configured
+  await sendToSheet(payload);
+  submitted=true;
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
